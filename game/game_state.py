@@ -51,7 +51,10 @@ class GameState:
         # Update frightened timer
         if self.frightened_timer > 0:
             self.frightened_timer -= 1
-        
+
+        # Check if any ghost was eaten
+        ate = False
+
         # Update ghosts
         for ghost in self.ghosts:
             ghost.update(self.maze, self.pacman, self.ghosts)
@@ -59,9 +62,7 @@ class GameState:
             # Check collision with Pacman
             if ghost.collides_with(self.pacman):
                 if ghost.mode == FRIGHTENED:
-                    # Eat ghost
-                    self.score += GHOST_SCORE
-                    ghost.reset_position()
+                    ate = True
                 else:
                     # Pacman dies
                     self.pacman.lives -= 1
@@ -69,7 +70,14 @@ class GameState:
                         self.game_over = True
                     else:
                         self._reset_positions()
-        
+
+        # Superposition -> All ghosts eaten
+        if ate:
+            for ghost in self.ghosts:
+                # Eat ghost
+                self.score += GHOST_SCORE
+                ghost.reset_position()
+
         # Check if level complete
         if self.maze.all_pellets_eaten():
             self.won = True
