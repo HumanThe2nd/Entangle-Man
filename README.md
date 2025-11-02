@@ -1,18 +1,37 @@
 ## Installation
-If not already installed,
-- Install Qiskit to run code on quantum hardware
+If you're using uv
+```bash
+# Install dependencies and create virtual environment
+uv sync
+
+# Run game
+uv run game/main.py
 ```
-pip install qiskit-ibm-runtime
-```
-- Install Pygame for game interface
-```
-pip install pygame
+If you're not using uv
+```bash
+# Create a virtual environment (Unix/macOS)
+python3 -m venv .venv
+source .venv/bin/activate
+
+# OR on Windows (cmd)
+python -m venv .venv
+.venv\Scripts\activate
+
+# OR on Windows (PowerShell)
+python -m venv .venv
+.venv\Scripts\Activate.ps1
+
+# Install dependencies
+pip install -r requirements.txt
+
+# Run game
+python3 game/main.py
 ```
 
 
 ## Problem Definition & Motivation 
 - Quantum computing is still unefficient and not commonly applicable in modern systems
-- We strive to utilize the unique properties of quantum computing through qiskit to demonstrate its capabales
+- We strive to utilize the unique properties of quantum computing through qiskit to demonstrate its capabilities
 - To achieve this goal, we create an interactive game, visualizing the character
 
 ## Inspirations
@@ -20,9 +39,8 @@ https://chetbae.github.io/quantum-pacman/
 
 ## Technical Approach (Theory)
 Design a game leveraging quantum mechanism provided by the qiskit library
-1. superposition: all walls are visible but are in a superposition of existence (some can be moved through)
+1. superposition: all walls are visible (for show) but are in a superposition of existence (some can be moved through, the real measurement is done when you touch them)
 2. entanglement: all pixels for a wall (technically individual walls) that are adjacent to eachother are entangled so that their superposition leads to the same result when measured. also, the ghosts (and or particles) have their fates entangled (eating one has a chance to eat others)
-3. Noise: **only add if we have time** -> every time interval, a "noise" changes the state of the walls 
 
 ## Implementation quality
 - Aiming for clean, readable and functioning program
@@ -58,3 +76,4 @@ Claude
 
 ## Ideas:
 - Entanglement
+- Superposition

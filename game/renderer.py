@@ -19,7 +19,7 @@ class Renderer:
         self.screen.fill(BLACK)
         
         # Render each component
-        self._render_maze(game_state.maze)
+        self._render_maze(game_state.maze, game_state.pacman)
         self._render_pellets(game_state.maze)
         self._render_pacman(game_state.pacman)
         
@@ -29,7 +29,7 @@ class Renderer:
         self._render_ui(game_state)
         
         if game_state.game_over:
-            self._render_game_over()
+            self._render_game_over(game_state)
         elif game_state.won:
             self._render_win()
         elif game_state.paused:
@@ -37,38 +37,56 @@ class Renderer:
         
         pygame.display.flip()
     
-    def _render_maze(self, maze):
+    def _render_maze(self, maze, pacman=None):
         """Render the maze walls"""
         for y in range(maze.height):
             for x in range(maze.width):
                 tile = maze.get_tile(x, y)
                 if tile == WALL:
                     rect = pygame.Rect(x * TILE_SIZE, y * TILE_SIZE, TILE_SIZE, TILE_SIZE)
+                    
+                    # Check if wall has been measured and locked as passable
                     pos = (x, y)
-                    if pos in maze.disappeared_walls:
-                        # Fill with black for quantum tunneled wall
+                    is_passable = pos in maze.entanglement.locked_measurements and maze.entanglement.locked_measurements[pos]
+                    
+                    # Only show visual effect if wall is passable AND near Pacman
+                    # This prevents showing cyan walls far from Pacman (visual bug fix)
+                    show_passable = False
+                    if is_passable and pacman:
+                        pacman_grid_x = int(pacman.x // TILE_SIZE)
+                        pacman_grid_y = int(pacman.y // TILE_SIZE)
+                        # Check if wall is adjacent to Pacman (within 8 surrounding tiles)
+                        dx = abs(x - pacman_grid_x)
+                        dy = abs(y - pacman_grid_y)
+                        if dx <= 1 and dy <= 1:
+                            show_passable = True
+                    
+                    if show_passable:
+                        # Wall is currently measured as passable (quantum tunneling active)
+                        # Draw as semi-transparent/ghostly
                         pygame.draw.rect(self.screen, BLACK, rect)
-                        # Draw dashed blue border
+                        # Draw dashed cyan border to show quantum state
                         dash_length = 4
                         for i in range(0, TILE_SIZE, dash_length * 2):
                             # Top border
-                            pygame.draw.line(self.screen, BLUE, 
+                            pygame.draw.line(self.screen, CYAN, 
                                 (x * TILE_SIZE + i, y * TILE_SIZE),
                                 (x * TILE_SIZE + i + dash_length, y * TILE_SIZE))
                             # Bottom border
-                            pygame.draw.line(self.screen, BLUE,
+                            pygame.draw.line(self.screen, CYAN,
                                 (x * TILE_SIZE + i, (y + 1) * TILE_SIZE - 1),
                                 (x * TILE_SIZE + i + dash_length, (y + 1) * TILE_SIZE - 1))
                             # Left border
-                            pygame.draw.line(self.screen, BLUE,
+                            pygame.draw.line(self.screen, CYAN,
                                 (x * TILE_SIZE, y * TILE_SIZE + i),
                                 (x * TILE_SIZE, y * TILE_SIZE + i + dash_length))
                             # Right border
-                            pygame.draw.line(self.screen, BLUE,
+                            pygame.draw.line(self.screen, CYAN,
                                 ((x + 1) * TILE_SIZE - 1, y * TILE_SIZE + i),
                                 ((x + 1) * TILE_SIZE - 1, y * TILE_SIZE + i + dash_length))
                     else:
-                        # Normal solid wall
+                        # Wall in superposition (normal state)
+                        # Draw as solid blue wall
                         pygame.draw.rect(self.screen, BLUE, rect)
     
     def _render_pellets(self, maze):
@@ -189,20 +207,30 @@ class Renderer:
             y = SCREEN_HEIGHT - 20
             pygame.draw.circle(self.screen, YELLOW, (x, y), 10)
     
-    def _render_game_over(self):
+    def _render_game_over(self, game_state):
         """Render game over screen"""
         overlay = pygame.Surface((SCREEN_WIDTH, SCREEN_HEIGHT))
         overlay.set_alpha(200)
         overlay.fill(BLACK)
         self.screen.blit(overlay, (0, 0))
         
-        game_over_text = self.font.render("GAME OVER", True, RED)
+        # Show different message based on death reason
+        if game_state.death_reason == "wall":
+            game_over_text = self.font.render("KILLED BY THE WALL", True, RED)
+            reason_text = self.small_font.render("Quantum trap collapsed!", True, CYAN)
+        else:
+            game_over_text = self.font.render("GAME OVER", True, RED)
+            reason_text = None
+        
         restart_text = self.small_font.render("Press R to Restart", True, WHITE)
         
-        text_rect = game_over_text.get_rect(center=(SCREEN_WIDTH // 2, SCREEN_HEIGHT // 2 - 30))
-        restart_rect = restart_text.get_rect(center=(SCREEN_WIDTH // 2, SCREEN_HEIGHT // 2 + 20))
+        text_rect = game_over_text.get_rect(center=(SCREEN_WIDTH // 2, SCREEN_HEIGHT // 2 - 40))
+        restart_rect = restart_text.get_rect(center=(SCREEN_WIDTH // 2, SCREEN_HEIGHT // 2 + 40))
         
         self.screen.blit(game_over_text, text_rect)
+        if reason_text:
+            reason_rect = reason_text.get_rect(center=(SCREEN_WIDTH // 2, SCREEN_HEIGHT // 2))
+            self.screen.blit(reason_text, reason_rect)
         self.screen.blit(restart_text, restart_rect)
     
     def _render_win(self):
