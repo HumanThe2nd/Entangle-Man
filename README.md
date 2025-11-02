@@ -1,29 +1,52 @@
-Problem Definition & Motivation 
-- [to change] Classical randomness systems are limited and can't replicate quantum uncertainity or interference effects
-- We strive to utilize the unique properties of quantum computing through qiskit
-- the game simulates quantum circuits to demonstrate how 
+## Installation
+If not already installed,
+- Install Qiskit to run code on quantum hardware
+```
+pip install qiskit-ibm-runtime
+```
+- Install Pygame for game interface
+```
+pip install pygame
+```
 
-Technical Approach (Theory)
-- Design a game leveraging the superposition entanglement mechanism provided by the qiskit library
-- superposition -> allows a creative and quantum form of randomization
-- entanglement -> allows 
 
-Implementation quality
-- Make clean, readable and functioning program
+## Problem Definition & Motivation 
+- Quantum computing is still unefficient and not commonly applicable in modern systems
+- We strive to utilize the unique properties of quantum computing through qiskit to demonstrate its capabales
+- To achieve this goal, we create an interactive game, visualizing the character
 
-Result & Evaluation
+## Technical Approach (Theory)
+Design a game leveraging quantum mechanism provided by the qiskit library
+1. superposition: all walls are visible but are in a superposition of existence (some can be moved through)
+2. entanglement: the ghosts (and or particles) have their fates entangled (eating one has a chance to eat others)
+3. Noise: **only add if we have time** -> every time interval, a "noise" changes the state of the walls 
+
+## Implementation quality
+- Aiming for clean, readable and functioning program
+
+## Result & Evaluation
 - Collect histograms or other graphs of quantum vs classical runs
-- Visualize how 
+- Visualize the stats/noise and give a demo of the game
 
-Teamwork & Process
-Daniel:
+## Quantum Rigor & Insight
+- Illustrate the connection between quantum properties with our interactive demo
+
+## Reproducibility & Repo Quality
+- Readme contains all details to run
+
+## Impact & Creativity
+- Educates users of quantum peroperties such as superposition and entanglement
+- Built using quantum library
+
+## Teamwork & Process
+Daniel: 
+<hr>
 Waaberi:
+<hr>
 Samith:
+<hr>
 Aarya:
 
-Ideas:
-- Multiplayer
-- Quantum Generated maps 
-- Superposition somehow
-- Entanglement (must have due to team name)
-- Measurement
+
+## Ideas:
+- Entanglement
