@@ -6,7 +6,8 @@ from constants import *
 from entities import Pacman, Ghost
 from maze import Maze
 
-
+# Entanglement matrix for ghosts (eaten together)
+entangle = [[1, 1, 0, 0],[1, 1, 1, 0],[0, 1, 1, 1],[0, 0, 1, 1]]
 class GameState:
     """Manages the overall game state"""
     
@@ -53,8 +54,7 @@ class GameState:
             self.frightened_timer -= 1
 
         # Check if any ghost was eaten
-        ate = False
-
+        i = 0
         # Update ghosts
         for ghost in self.ghosts:
             ghost.update(self.maze, self.pacman, self.ghosts)
@@ -62,7 +62,13 @@ class GameState:
             # Check collision with Pacman
             if ghost.collides_with(self.pacman):
                 if ghost.mode == FRIGHTENED:
-                    ate = True
+                    j = 0
+                    for ghost2 in self.ghosts:
+                        if entangle[i][j]:
+                            # Eat ghost
+                            self.score += GHOST_SCORE
+                            ghost2.reset_position()
+                        j += 1
                 else:
                     # Pacman dies
                     self.pacman.lives -= 1
@@ -70,13 +76,8 @@ class GameState:
                         self.game_over = True
                     else:
                         self._reset_positions()
+            i += 1
 
-        # Superposition -> All ghosts eaten
-        if ate:
-            for ghost in self.ghosts:
-                # Eat ghost
-                self.score += GHOST_SCORE
-                ghost.reset_position()
 
         # Check if level complete
         if self.maze.all_pellets_eaten():
