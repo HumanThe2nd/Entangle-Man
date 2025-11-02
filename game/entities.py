@@ -193,6 +193,7 @@ class Ghost(Entity):
         self.target = (0, 0)
         self.decision_timer = 0  # Timer for pathfinding decisions (in frames)
         self.decision_delay = 3  # 0.5 seconds at 60 FPS
+        self.entangled_with = None  # Reference to entangled ghost
         
     def update(self, maze, pacman, ghosts):
         """Update ghost position and behavior"""
@@ -326,9 +327,22 @@ class Ghost(Entity):
             self.frightened_timer = duration
             # Reverse direction
             self.direction = (-self.direction[0], -self.direction[1])
+            # Clear any existing entanglement
+            self.entangled_with = None
+
+    def entangle_with(self, other_ghost):
+        """Entangle this ghost with another ghost"""
+        if self.mode == FRIGHTENED and other_ghost.mode == FRIGHTENED:
+            self.entangled_with = other_ghost
+            other_ghost.entangled_with = self
     
     def reset_position(self):
         """Reset to starting position"""
+        if self.entangled_with:
+            # Clear entanglement on both ghosts
+            other = self.entangled_with
+            other.entangled_with = None
+            self.entangled_with = None
         self.x = self.start_x
         self.y = self.start_y
         self.direction = UP

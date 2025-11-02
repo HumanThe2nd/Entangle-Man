@@ -46,8 +46,19 @@ class GameState:
         if score_gained == POWER_PELLET_SCORE:
             # Power pellet eaten, frighten ghosts
             self.frightened_timer = POWER_PELLET_DURATION * FPS
+            # First clear any existing entanglements
             for ghost in self.ghosts:
                 ghost.set_frightened(self.frightened_timer)
+            
+            # Randomly pair up ghosts for entanglement
+            import random
+            frightened_ghosts = [g for g in self.ghosts if g.mode == FRIGHTENED and not g.entangled_with]
+            if len(frightened_ghosts) >= 2:
+                # Shuffle the list
+                random.shuffle(frightened_ghosts)
+                # Pair up ghosts
+                for i in range(0, len(frightened_ghosts) - 1, 2):
+                    frightened_ghosts[i].entangle_with(frightened_ghosts[i + 1])
         
         self.score += score_gained
         
@@ -74,12 +85,22 @@ class GameState:
                     else:
                         self._reset_positions()
 
-        # Superposition -> All ghosts eaten
+        # Handle ghost eating
         if ate:
-            for ghost in self.ghosts:
-                # Eat ghost
-                self.score += GHOST_SCORE
-                ghost.reset_position()
+            eaten_ghosts = [g for g in self.ghosts if g.collides_with(self.pacman)]
+            for ghost in eaten_ghosts:
+                # If ghost is entangled, eat its partner too
+                if ghost.entangled_with:
+                    entangled_partner = ghost.entangled_with
+                    # Reset both ghosts
+                    ghost.reset_position()
+                    entangled_partner.reset_position()
+                    # Score for both ghosts
+                    self.score += GHOST_SCORE * 2
+                else:
+                    # Just eat this ghost
+                    ghost.reset_position()
+                    self.score += GHOST_SCORE
 
         # Check if level complete
         if self.maze.all_pellets_eaten():
