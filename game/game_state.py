@@ -7,7 +7,7 @@ from entities import Pacman, Ghost
 from maze import Maze
 
 # Entanglement matrix for ghosts (eaten together)
-entangle = [[1, 1, 0, 0],[1, 1, 1, 0],[0, 1, 1, 1],[0, 0, 1, 1]]
+entangle = [[1, 1, 0, 0],[1, 1, 0, 0],[0, 0, 1, 1],[0, 0, 1, 1]]
 class GameState:
     """Manages the overall game state"""
     
@@ -91,23 +91,6 @@ class GameState:
                     else:
                         self._reset_positions()
             i += 1
-
-        # Handle ghost eating
-        if ate:
-            eaten_ghosts = [g for g in self.ghosts if g.collides_with(self.pacman)]
-            for ghost in eaten_ghosts:
-                # If ghost is entangled, eat its partner too
-                if ghost.entangled_with:
-                    entangled_partner = ghost.entangled_with
-                    # Reset both ghosts
-                    ghost.reset_position()
-                    entangled_partner.reset_position()
-                    # Score for both ghosts
-                    self.score += GHOST_SCORE * 2
-                else:
-                    # Just eat this ghost
-                    ghost.reset_position()
-                    self.score += GHOST_SCORE
 
         # Check if level complete
         if self.maze.all_pellets_eaten():
