@@ -5,6 +5,7 @@ import numpy as np
 from qiskit import QuantumCircuit, transpile
 from qiskit_aer import AerSimulator
 from constants import *
+import time
 
 
 class Maze:
@@ -21,7 +22,20 @@ class Maze:
         # Initialize entanglement after maze is created
         from entanglement import EntanglementManager
         self.entanglement = EntanglementManager(self)
+        self.last_refresh = time.time()
+        self.refresh_interval = 5.0  # Refresh walls every 5 seconds
+
+    def update_quantum_state(self, pacman_x, pacman_y):
+        """
+        Update quantum measurement locks based on Pacman's position and time.
+        Walls refresh their quantum state periodically.
+        """
+        current_time = time.time()
         
+
+    def reset_all_walls(self):
+       self.layout = self._generate_quantum_layout()
+      
     def _quantum_walk(self, steps=10):
         """
         Perform a quantum walk to generate probability distribution.

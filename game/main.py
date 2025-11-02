@@ -3,6 +3,8 @@ Main game loop for Pacman
 """
 import pygame
 import sys
+import maze
+import time
 from constants import *
 from game_state import GameState
 from renderer import Renderer
@@ -12,7 +14,7 @@ def main():
     """Main game function"""
     # Initialize Pygame
     pygame.init()
-    
+    last_time = time.time()
     # Create screen
     screen = pygame.display.set_mode((SCREEN_WIDTH, SCREEN_HEIGHT))
     pygame.display.set_caption("Pacman")
@@ -42,6 +44,13 @@ def main():
         # Handle continuous input
         keys = pygame.key.get_pressed()
         game_state.handle_input(keys)
+        
+
+        # Update wall
+        cur_time = time.time()
+        if cur_time - last_time > 5:
+            game_state.maze.reset_all_walls()
+            last_time = cur_time
         
         # Update game state
         game_state.update()
