@@ -3,7 +3,7 @@ Game constants and configuration for Pacman
 """
 
 # Screen settings
-TILE_SIZE = 30
+TILE_SIZE = 20
 SCREEN_WIDTH = 28 * TILE_SIZE  # Standard Pacman maze is 28x31
 SCREEN_HEIGHT = 31 * TILE_SIZE
 FPS = 60
@@ -32,7 +32,7 @@ POWER_PELLET_SCORE = 50
 # Entity types
 WALL = 1
 PELLET = 2
-POWER_PELLET = 3
+POWER_PELLET = 5
 EMPTY = 0
 GHOST_HOUSE = 4
 

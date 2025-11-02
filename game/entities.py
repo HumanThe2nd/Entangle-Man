@@ -28,55 +28,91 @@ class Entity:
     
     def move_left(self, maze, grid_x, grid_y, center_y):
         """Move entity left"""
-        if maze.is_valid_position(grid_x - 1, grid_y):
+        next_x = grid_x - 1
+        # For ghosts, use for_ghost=True to prevent quantum tunneling
+        is_ghost = isinstance(self, Ghost)
+        if maze.is_valid_position(next_x, grid_y, for_ghost=is_ghost):
             # Can move freely
             self.x -= self.speed
             self.y = center_y
         else:
-            # Wall to the left, clamp to current tile center
-            target_x = grid_x * TILE_SIZE + TILE_SIZE // 2
-            if self.x > target_x:
-                self.x = max(self.x - self.speed, target_x)
+            # Only Pacman can try quantum tunneling
+            if not is_ghost and maze.try_quantum_tunneling(next_x, grid_y):
+                # Wall disappeared, can move now
+                self.x -= self.speed
                 self.y = center_y
+            else:
+                # Wall is solid, clamp to current tile center
+                target_x = grid_x * TILE_SIZE + TILE_SIZE // 2
+                if self.x > target_x:
+                    self.x = max(self.x - self.speed, target_x)
+                    self.y = center_y
     
     def move_right(self, maze, grid_x, grid_y, center_y):
         """Move entity right"""
-        if maze.is_valid_position(grid_x + 1, grid_y):
+        next_x = grid_x + 1
+        # For ghosts, use for_ghost=True to prevent quantum tunneling
+        is_ghost = isinstance(self, Ghost)
+        if maze.is_valid_position(next_x, grid_y, for_ghost=is_ghost):
             # Can move freely
             self.x += self.speed
             self.y = center_y
         else:
-            # Wall to the right, clamp to current tile center
-            target_x = grid_x * TILE_SIZE + TILE_SIZE // 2
-            if self.x < target_x:
-                self.x = min(self.x + self.speed, target_x)
+            # Only Pacman can try quantum tunneling
+            if not is_ghost and maze.try_quantum_tunneling(next_x, grid_y):
+                # Wall disappeared, can move now
+                self.x += self.speed
                 self.y = center_y
+            else:
+                # Wall is solid, clamp to current tile center
+                target_x = grid_x * TILE_SIZE + TILE_SIZE // 2
+                if self.x < target_x:
+                    self.x = min(self.x + self.speed, target_x)
+                    self.y = center_y
     
     def move_up(self, maze, grid_x, grid_y, center_x):
         """Move entity up"""
-        if maze.is_valid_position(grid_x, grid_y - 1):
+        next_y = grid_y - 1
+        # For ghosts, use for_ghost=True to prevent quantum tunneling
+        is_ghost = isinstance(self, Ghost)
+        if maze.is_valid_position(grid_x, next_y, for_ghost=is_ghost):
             # Can move freely
             self.y -= self.speed
             self.x = center_x
         else:
-            # Wall above, clamp to current tile center
-            target_y = grid_y * TILE_SIZE + TILE_SIZE // 2
-            if self.y > target_y:
-                self.y = max(self.y - self.speed, target_y)
+            # Only Pacman can try quantum tunneling
+            if not is_ghost and maze.try_quantum_tunneling(grid_x, next_y):
+                # Wall disappeared, can move now
+                self.y -= self.speed
                 self.x = center_x
+            else:
+                # Wall is solid, clamp to current tile center
+                target_y = grid_y * TILE_SIZE + TILE_SIZE // 2
+                if self.y > target_y:
+                    self.y = max(self.y - self.speed, target_y)
+                    self.x = center_x
     
     def move_down(self, maze, grid_x, grid_y, center_x):
         """Move entity down"""
-        if maze.is_valid_position(grid_x, grid_y + 1):
+        next_y = grid_y + 1
+        # For ghosts, use for_ghost=True to prevent quantum tunneling
+        is_ghost = isinstance(self, Ghost)
+        if maze.is_valid_position(grid_x, next_y, for_ghost=is_ghost):
             # Can move freely
             self.y += self.speed
             self.x = center_x
         else:
-            # Wall below, clamp to current tile center
-            target_y = grid_y * TILE_SIZE + TILE_SIZE // 2
-            if self.y < target_y:
-                self.y = min(self.y + self.speed, target_y)
+            # Only Pacman can try quantum tunneling
+            if not is_ghost and maze.try_quantum_tunneling(grid_x, next_y):
+                # Wall disappeared, can move now
+                self.y += self.speed
                 self.x = center_x
+            else:
+                # Wall is solid, clamp to current tile center
+                target_y = grid_y * TILE_SIZE + TILE_SIZE // 2
+                if self.y < target_y:
+                    self.y = min(self.y + self.speed, target_y)
+                    self.x = center_x
 
 
 class Pacman(Entity):
@@ -110,7 +146,7 @@ class Pacman(Entity):
             next_grid_x = grid_x + self.next_direction[0]
             next_grid_y = grid_y + self.next_direction[1]
             
-            if maze.is_valid_position(next_grid_x, next_grid_y):
+            if maze.is_valid_position(next_grid_x, next_grid_y, for_ghost=False):
                 self.direction = self.next_direction
             self.next_direction = NONE
         
@@ -157,6 +193,7 @@ class Ghost(Entity):
         self.target = (0, 0)
         self.decision_timer = 0  # Timer for pathfinding decisions (in frames)
         self.decision_delay = 3  # 0.5 seconds at 60 FPS
+        self.entangled_with = None  # Reference to entangled ghost
         
     def update(self, maze, pacman, ghosts):
         """Update ghost position and behavior"""
@@ -229,7 +266,10 @@ class Ghost(Entity):
             next_x = grid_x + direction[0]
             next_y = grid_y + direction[1]
             
-            if maze.is_valid_position(next_x, next_y):
+            # Check wall collision specifically for ghost
+            next_pos_x = grid_x + direction[0]
+            next_pos_y = grid_y + direction[1]
+            if not maze.is_wall(next_pos_x, next_pos_y, for_ghost=True):
                 # Calculate distance to target
                 dist = math.sqrt((next_x - self.target[0])**2 + (next_y - self.target[1])**2)
                 possible_directions.append((dist, direction))
@@ -287,9 +327,22 @@ class Ghost(Entity):
             self.frightened_timer = duration
             # Reverse direction
             self.direction = (-self.direction[0], -self.direction[1])
+            # Clear any existing entanglement
+            self.entangled_with = None
+
+    def entangle_with(self, other_ghost):
+        """Entangle this ghost with another ghost"""
+        if self.mode == FRIGHTENED and other_ghost.mode == FRIGHTENED:
+            self.entangled_with = other_ghost
+            other_ghost.entangled_with = self
     
     def reset_position(self):
         """Reset to starting position"""
+        if self.entangled_with:
+            # Clear entanglement on both ghosts
+            other = self.entangled_with
+            other.entangled_with = None
+            self.entangled_with = None
         self.x = self.start_x
         self.y = self.start_y
         self.direction = UP
