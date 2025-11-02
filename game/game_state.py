@@ -8,7 +8,7 @@ from maze import Maze
 
 # Entanglement matrix for ghosts (eaten together)
 # Red, Pink, Cyan, Orange
-entangle = [[0, 1, 0, 1],[1, 0, 1, 0],[1, 0, 1, 0],[0, 1, 0, 1]]
+entangle = [[1, 0, 1, 0],[0, 1, 0, 1],[1, 0, 1, 0],[0, 1, 0, 1]]
 class GameState:
     """Manages the overall game state"""
     
