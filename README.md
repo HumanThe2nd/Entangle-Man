@@ -21,7 +21,7 @@ https://chetbae.github.io/quantum-pacman/
 ## Technical Approach (Theory)
 Design a game leveraging quantum mechanism provided by the qiskit library
 1. superposition: all walls are visible but are in a superposition of existence (some can be moved through)
-2. entanglement: the ghosts (and or particles) have their fates entangled (eating one has a chance to eat others)
+2. entanglement: all pixels for a wall (technically individual walls) that are adjacent to eachother are entangled so that their superposition leads to the same result when measured. also, the ghosts (and or particles) have their fates entangled (eating one has a chance to eat others)
 3. Noise: **only add if we have time** -> every time interval, a "noise" changes the state of the walls 
 
 ## Implementation quality
