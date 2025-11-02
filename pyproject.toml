@@ -1,0 +1,13 @@
+[project]
+name = "quantum"
+version = "0.1.0"
+description = "Add your description here"
+readme = "README.md"
+requires-python = ">=3.13"
+dependencies = [
+    "matplotlib>=3.10.7",
+    "pygame>=2.6.1",
+    "pylatexenc>=2.10",
+    "qiskit-aer>=0.17.2",
+    "qiskit-ibm-runtime>=0.43.1",
+]
