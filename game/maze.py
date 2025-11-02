@@ -18,6 +18,10 @@ class Maze:
         self.power_pellets = set()
         self._initialize_pellets()
         self.total_pellets = len(self.pellets) + len(self.power_pellets)
+        self.disappeared_walls = set()  # Set of (x,y) coordinates of walls that have disappeared
+        # Initialize entanglement after maze is created
+        from entanglement import EntanglementManager
+        self.entanglement = EntanglementManager(self)
         
     def _quantum_walk(self, steps=10):
         """
@@ -156,15 +160,82 @@ class Maze:
                 elif self.layout[y][x] == POWER_PELLET:
                     self.power_pellets.add((x, y))
     
-    def is_wall(self, x, y):
-        """Check if position is a wall"""
+    def is_wall(self, x, y, for_ghost=False):
+        """
+        Check if position is a wall, considering disappeared walls
+        Args:
+            x: x coordinate
+            y: y coordinate
+            for_ghost: if True, ignore quantum tunneling (ghosts can't pass)
+        """
+        # Edge walls and out-of-bounds are always solid
         if x < 0 or x >= self.width or y < 0 or y >= self.height:
             return True
-        return self.layout[y][x] == WALL
+
+        tile = self.layout[y][x]
+        
+        # Border walls are always solid
+        if x == 0 or x == self.width - 1 or y == 0 or y == self.height - 1:
+            return tile == WALL
+            
+        # For ghosts, all walls are solid regardless of quantum state
+        if for_ghost:
+            return tile == WALL
+            
+        # For Pacman, check if wall has disappeared (except borders)
+        if (x, y) in self.disappeared_walls:
+            return False
+            
+        return tile == WALL
+        
+    def try_quantum_tunneling(self, x, y):
+        """
+        Try to make a wall disappear using quantum tunneling.
+        Returns True if the wall should disappear.
+        """
+        # Don't allow tunneling through border walls
+        if x <= 0 or x >= self.width - 1 or y <= 0 or y >= self.height - 1:
+            return False
+            
+        if (x, y) not in self.disappeared_walls and self.layout[y][x] == WALL:
+            # Use entangled tunneling instead of single wall
+            return self.entanglement.try_entangled_tunneling(x, y)
+        return False
+        
+    def update_quantum_walls(self, pacman_x, pacman_y):
+        """Reset walls that are far from Pacman, handling entangled groups"""
+        # Convert Pacman's position to grid coordinates
+        grid_x = int(pacman_x // TILE_SIZE)
+        grid_y = int(pacman_y // TILE_SIZE)
+        
+        # Get Pacman's current and next positions to keep tunnels open while moving through
+        pacman_positions = {(grid_x, grid_y)}  # Current position
+        
+        # Add positions in Pacman's movement direction
+        for dx in [-1, 0, 1]:
+            for dy in [-1, 0, 1]:
+                check_x = grid_x + dx
+                check_y = grid_y + dy
+                if 0 < check_x < self.width - 1 and 0 < check_y < self.height - 1:
+                    pacman_positions.add((check_x, check_y))
+        
+        # Check all disappeared walls
+        checked_groups = set()
+        for wall_x, wall_y in list(self.disappeared_walls):
+            # Check if any part of the wall group is near Pacman's movement area
+            keep_open = False
+            for px, py in pacman_positions:
+                if abs(wall_x - px) <= 1 and abs(wall_y - py) <= 1:
+                    keep_open = True
+                    break
+            
+            if not keep_open:
+                # Reset the entire entangled group if Pacman isn't nearby
+                self.entanglement.reset_wall_group(wall_x, wall_y)
     
-    def is_valid_position(self, x, y):
+    def is_valid_position(self, x, y, for_ghost=False):
         """Check if position is valid (not a wall)"""
-        return not self.is_wall(x, y)
+        return not self.is_wall(x, y, for_ghost)
     
     def get_tile(self, x, y):
         """Get tile type at position"""

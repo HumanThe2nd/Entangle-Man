@@ -38,6 +38,9 @@ class GameState:
         # Update Pacman
         self.pacman.update(self.maze)
         
+        # Update quantum walls based on Pacman's position
+        self.maze.update_quantum_walls(self.pacman.x, self.pacman.y)
+        
         # Check pellet collection
         score_gained = self.maze.eat_pellet(self.pacman.x, self.pacman.y)
         if score_gained == POWER_PELLET_SCORE:

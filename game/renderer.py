@@ -18,23 +18,16 @@ class Renderer:
         """Render the entire game state"""
         self.screen.fill(BLACK)
         
-        # Render maze
+        # Render each component
         self._render_maze(game_state.maze)
-        
-        # Render pellets
         self._render_pellets(game_state.maze)
+        self._render_pacman(game_state.pacman)
         
-        # Render ghosts
         for ghost in game_state.ghosts:
             self._render_ghost(ghost)
         
-        # Render Pacman
-        self._render_pacman(game_state.pacman)
-        
-        # Render UI
         self._render_ui(game_state)
         
-        # Render game over / win screen
         if game_state.game_over:
             self._render_game_over()
         elif game_state.won:
@@ -48,10 +41,35 @@ class Renderer:
         """Render the maze walls"""
         for y in range(maze.height):
             for x in range(maze.width):
-                if maze.layout[y][x] == WALL:
+                tile = maze.get_tile(x, y)
+                if tile == WALL:
                     rect = pygame.Rect(x * TILE_SIZE, y * TILE_SIZE, TILE_SIZE, TILE_SIZE)
-                    pygame.draw.rect(self.screen, DARK_BLUE, rect)
-                    pygame.draw.rect(self.screen, LIGHT_BLUE, rect, 2)
+                    pos = (x, y)
+                    if pos in maze.disappeared_walls:
+                        # Fill with black for quantum tunneled wall
+                        pygame.draw.rect(self.screen, BLACK, rect)
+                        # Draw dashed blue border
+                        dash_length = 4
+                        for i in range(0, TILE_SIZE, dash_length * 2):
+                            # Top border
+                            pygame.draw.line(self.screen, BLUE, 
+                                (x * TILE_SIZE + i, y * TILE_SIZE),
+                                (x * TILE_SIZE + i + dash_length, y * TILE_SIZE))
+                            # Bottom border
+                            pygame.draw.line(self.screen, BLUE,
+                                (x * TILE_SIZE + i, (y + 1) * TILE_SIZE - 1),
+                                (x * TILE_SIZE + i + dash_length, (y + 1) * TILE_SIZE - 1))
+                            # Left border
+                            pygame.draw.line(self.screen, BLUE,
+                                (x * TILE_SIZE, y * TILE_SIZE + i),
+                                (x * TILE_SIZE, y * TILE_SIZE + i + dash_length))
+                            # Right border
+                            pygame.draw.line(self.screen, BLUE,
+                                ((x + 1) * TILE_SIZE - 1, y * TILE_SIZE + i),
+                                ((x + 1) * TILE_SIZE - 1, y * TILE_SIZE + i + dash_length))
+                    else:
+                        # Normal solid wall
+                        pygame.draw.rect(self.screen, BLUE, rect)
     
     def _render_pellets(self, maze):
         """Render pellets and power pellets"""
