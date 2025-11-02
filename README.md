@@ -32,7 +32,7 @@ python3 game/main.py
 ## Problem Definition & Motivation 
 - Quantum computing is still unefficient and not commonly applicable in modern systems
 - We strive to utilize the unique properties of quantum computing through qiskit to demonstrate its capabilities
-- To achieve this goal, we create an interactive game, visualizing the character
+- To achieve this goal, we create an interactive game, visualizing the character and its interactions with the environment
 
 ## Inspirations
 https://chetbae.github.io/quantum-pacman/
@@ -61,17 +61,17 @@ Design a game leveraging quantum mechanism provided by the qiskit library
 
 ## Teamwork & Process
 Daniel: 
-<hr>
+<br>
 Waaberi:
-<hr>
+<br>
 Samith:
-<hr>
+<br>
 Aarya:
-<hr>
+<br>
 
 ## External Contributors
 ChatGPT
-<hr>
+<br>
 Claude
 
 ## Ideas:
