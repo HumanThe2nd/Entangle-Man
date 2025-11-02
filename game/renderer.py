@@ -140,7 +140,7 @@ class Renderer:
         # Draw entanglement line if ghost is entangled
         if ghost.entangled_with and ghost.mode == FRIGHTENED:
             # Draw line between entangled ghosts
-            pygame.draw.line(self.screen, WHITE, 
+            pygame.draw.line(self.screen, RED, 
                            (center_x, center_y),
                            (int(ghost.entangled_with.x), int(ghost.entangled_with.y)), 2)
 
