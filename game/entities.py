@@ -156,7 +156,7 @@ class Ghost(Entity):
         self.start_y = y
         self.target = (0, 0)
         self.decision_timer = 0  # Timer for pathfinding decisions (in frames)
-        self.decision_delay = 30  # 0.5 seconds at 60 FPS
+        self.decision_delay = 3  # 0.5 seconds at 60 FPS
         
     def update(self, maze, pacman, ghosts):
         """Update ghost position and behavior"""
