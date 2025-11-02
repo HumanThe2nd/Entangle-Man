@@ -89,10 +89,6 @@ class Renderer:
         # Calculate mouth opening
         mouth_angle = 30 + int(pacman.mouth_open * 15)
         
-        # Draw Pacman as a circle with a wedge removed
-        start_angle_rad = math.radians(start_angle + mouth_angle)
-        end_angle_rad = math.radians(start_angle - mouth_angle + 360)
-        
         # Draw filled circle
         pygame.draw.circle(self.screen, YELLOW, (center_x, center_y), radius)
         

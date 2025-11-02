@@ -15,6 +15,9 @@ pip install pygame
 - We strive to utilize the unique properties of quantum computing through qiskit to demonstrate its capabales
 - To achieve this goal, we create an interactive game, visualizing the character
 
+## Inspirations
+https://chetbae.github.io/quantum-pacman/
+
 ## Technical Approach (Theory)
 Design a game leveraging quantum mechanism provided by the qiskit library
 1. superposition: all walls are visible but are in a superposition of existence (some can be moved through)
@@ -48,6 +51,10 @@ Samith:
 Aarya:
 <hr>
 
+## External Contributors
+ChatGPT
+<hr>
+Claude
 
 ## Ideas:
 - Entanglement
