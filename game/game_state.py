@@ -21,6 +21,7 @@ class GameState:
         self.won = False
         self.paused = False
         self.frightened_timer = 0
+        self.death_reason = None  # "ghost" or "wall"
         
     def _create_ghosts(self):
         """Create the four ghosts with different personalities"""
@@ -38,9 +39,6 @@ class GameState:
         
         # Update Pacman
         self.pacman.update(self.maze)
-        
-        # Update quantum walls based on Pacman's position
-        self.maze.update_quantum_walls(self.pacman.x, self.pacman.y)
         
         # Check pellet collection
         score_gained = self.maze.eat_pellet(self.pacman.x, self.pacman.y)
@@ -88,6 +86,7 @@ class GameState:
                     self.pacman.lives -= 1
                     if self.pacman.lives <= 0:
                         self.game_over = True
+                        self.death_reason = "ghost"
                     else:
                         self._reset_positions()
             i += 1
@@ -95,6 +94,18 @@ class GameState:
         # Check if level complete
         if self.maze.all_pellets_eaten():
             self.won = True
+        
+        # Update quantum measurement locks based on Pacman's position
+        # Walls far from Pacman return to superposition
+        self.maze.update_quantum_state(self.pacman.x, self.pacman.y)
+        
+        # Check if Pacman is trapped by quantum walls
+        if not self.game_over:
+            pacman_grid_x = int(self.pacman.x // TILE_SIZE)
+            pacman_grid_y = int(self.pacman.y // TILE_SIZE)
+            if self.maze.entanglement.is_pacman_trapped(pacman_grid_x, pacman_grid_y):
+                self.game_over = True
+                self.death_reason = "wall"
     
     def _reset_positions(self):
         """Reset entity positions after death"""
@@ -112,6 +123,7 @@ class GameState:
         self.game_over = False
         self.won = False
         self.frightened_timer = 0
+        self.death_reason = None
     
     def next_level(self):
         """Progress to next level"""

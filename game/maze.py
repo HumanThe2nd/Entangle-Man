@@ -18,7 +18,6 @@ class Maze:
         self.power_pellets = set()
         self._initialize_pellets()
         self.total_pellets = len(self.pellets) + len(self.power_pellets)
-        self.disappeared_walls = set()  # Set of (x,y) coordinates of walls that have disappeared
         # Initialize entanglement after maze is created
         from entanglement import EntanglementManager
         self.entanglement = EntanglementManager(self)
@@ -162,7 +161,7 @@ class Maze:
     
     def is_wall(self, x, y, for_ghost=False):
         """
-        Check if position is a wall, considering disappeared walls
+        Check if position is a wall
         Args:
             x: x coordinate
             y: y coordinate
@@ -182,56 +181,36 @@ class Maze:
         if for_ghost:
             return tile == WALL
             
-        # For Pacman, check if wall has disappeared (except borders)
-        if (x, y) in self.disappeared_walls:
-            return False
-            
+        # For Pacman, walls can be tunneled through based on quantum measurement
+        # The measurement happens in try_quantum_tunneling
         return tile == WALL
         
     def try_quantum_tunneling(self, x, y):
         """
-        Try to make a wall disappear using quantum tunneling.
-        Returns True if the wall should disappear.
+        Try quantum tunneling - performs a fresh quantum measurement each time.
+        Returns True if the wall allows tunneling (measurement result = 1).
+        
+        Walls are ALWAYS in superposition until measured.
+        Each call represents a new measurement event.
         """
         # Don't allow tunneling through border walls
         if x <= 0 or x >= self.width - 1 or y <= 0 or y >= self.height - 1:
             return False
             
-        if (x, y) not in self.disappeared_walls and self.layout[y][x] == WALL:
-            # Use entangled tunneling instead of single wall
+        if self.layout[y][x] == WALL:
+            # Use entangled tunneling - performs fresh quantum measurement
             return self.entanglement.try_entangled_tunneling(x, y)
         return False
         
-    def update_quantum_walls(self, pacman_x, pacman_y):
-        """Reset walls that are far from Pacman, handling entangled groups"""
-        # Convert Pacman's position to grid coordinates
+    def update_quantum_state(self, pacman_x, pacman_y):
+        """
+        Update quantum measurement locks based on Pacman's position.
+        Walls far from Pacman return to superposition.
+        Walls near Pacman keep their locked measurement result.
+        """
         grid_x = int(pacman_x // TILE_SIZE)
         grid_y = int(pacman_y // TILE_SIZE)
-        
-        # Get Pacman's current and next positions to keep tunnels open while moving through
-        pacman_positions = {(grid_x, grid_y)}  # Current position
-        
-        # Add positions in Pacman's movement direction
-        for dx in [-1, 0, 1]:
-            for dy in [-1, 0, 1]:
-                check_x = grid_x + dx
-                check_y = grid_y + dy
-                if 0 < check_x < self.width - 1 and 0 < check_y < self.height - 1:
-                    pacman_positions.add((check_x, check_y))
-        
-        # Check all disappeared walls
-        checked_groups = set()
-        for wall_x, wall_y in list(self.disappeared_walls):
-            # Check if any part of the wall group is near Pacman's movement area
-            keep_open = False
-            for px, py in pacman_positions:
-                if abs(wall_x - px) <= 1 and abs(wall_y - py) <= 1:
-                    keep_open = True
-                    break
-            
-            if not keep_open:
-                # Reset the entire entangled group if Pacman isn't nearby
-                self.entanglement.reset_wall_group(wall_x, wall_y)
+        self.entanglement.unlock_walls_far_from_pacman(grid_x, grid_y)
     
     def is_valid_position(self, x, y, for_ghost=False):
         """Check if position is valid (not a wall)"""
